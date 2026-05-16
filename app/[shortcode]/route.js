@@ -1,9 +1,6 @@
 import { turso } from "@/lib/turso";
 import { NextResponse } from 'next/server';
 
-// ==========================================
-// KUNCI MUTLAK ANTI-CACHE VERCEL & FB
-// ==========================================
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
@@ -15,8 +12,7 @@ export async function GET(request, { params }) {
     // 1. Baca identitas (User-Agent)
     const userAgent = request.headers.get('user-agent') || '';
 
-    // 2. DETEKSI BOT YANG LEBIH SPESIFIK
-    // (Dipersingkat agar tidak salah tangkap Browser Internal FB Biru)
+    // 2. Deteksi Bot Sosial Media (Murni untuk Scraper)
     const isBot = /facebookexternalhit|whatsapp|telegrambot|twitterbot|googlebot|bingbot|slurp|spider/i.test(userAgent);
 
     // 3. Cari data link di database
@@ -31,41 +27,51 @@ export async function GET(request, { params }) {
 
     const data = result.rows[0];
 
-    // BIKIN HEADER ANTI-CACHE UNTUK BROWSER
+    // ==========================================
+    // SENJATA ANTI-CACHE: Angka Acak (Cache Buster)
+    // ==========================================
+    const randomNum = Math.floor(Math.random() * 10000000);
+
+    // Header untuk memaksa browser tidak menyimpan riwayat
     const noCacheHeaders = {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
       'Pragma': 'no-cache',
-      'Expires': '0',
     };
 
-    // ==========================================
-    // LOGIKA CLOAKING
-    // ==========================================
-
     if (isBot) {
-      // BOT FB/WA -> Lempar ke Fake Link
+      // JIKA BOT FB -> Lempar ke Fake Link
       let fakeUrl = data.fake_link || 'google.com'; 
-      if (!fakeUrl.startsWith('http')) {
-        fakeUrl = 'https://' + fakeUrl;
-      }
+      if (!fakeUrl.startsWith('http')) fakeUrl = 'https://' + fakeUrl;
       
-      // Tambahkan header Anti-Cache ke response
-      return NextResponse.redirect(new URL(fakeUrl), { headers: noCacheHeaders });
+      // Sisipkan angka acak di ujung URL
+      const separator = fakeUrl.includes('?') ? '&' : '?';
+      fakeUrl = `${fakeUrl}${separator}cb=${randomNum}`;
+
+      // Gunakan status 307 agar FB dilarang keras menyimpan URL ini
+      return NextResponse.redirect(new URL(fakeUrl), { 
+        status: 307, 
+        headers: noCacheHeaders 
+      });
       
     } else {
-      // MANUSIA ASLI (Via FB Biru, FB Lite, dll) -> Lempar ke Offer Link
+      // JIKA MANUSIA ASLI -> Lempar ke Offer Link
       await turso.execute({
         sql: "UPDATE links SET click_count = click_count + 1 WHERE short_code = ?",
         args: [shortcode]
       });
 
       let offerUrl = data.offer_link || 'google.com';
-      if (!offerUrl.startsWith('http')) {
-        offerUrl = 'https://' + offerUrl;
-      }
+      if (!offerUrl.startsWith('http')) offerUrl = 'https://' + offerUrl;
       
-      // Tambahkan header Anti-Cache ke response
-      return NextResponse.redirect(new URL(offerUrl), { headers: noCacheHeaders });
+      // Sisipkan angka acak di ujung URL
+      const separator = offerUrl.includes('?') ? '&' : '?';
+      offerUrl = `${offerUrl}${separator}cb=${randomNum}`;
+
+      // Gunakan status 307
+      return NextResponse.redirect(new URL(offerUrl), { 
+        status: 307, 
+        headers: noCacheHeaders 
+      });
     }
 
   } catch (error) {
