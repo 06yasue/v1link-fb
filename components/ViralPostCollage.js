@@ -9,17 +9,11 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
     try {
       const blob = await toBlob(cardRef.current, {
         pixelRatio: 1, 
-        width: 526, // Paksa hasil render persis 526px
+        width: 526, 
         height: 526,
         canvasWidth: 526,
         canvasHeight: 526,
-        style: { 
-          width: '526px', // Paksa ukuran asli saat didownload
-          height: '526px', 
-          maxWidth: '526px',
-          margin: '0',
-          transform: 'none'
-        }
+        style: { width: '526px', height: '526px', maxWidth: '526px', margin: '0', transform: 'none' }
       });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -34,9 +28,6 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
 
   return (
     <>
-      {/* KUNCI RESPONSIVE: width 100%, maxWidth 526px, dan aspectRatio 1/1 
-        Ini bikin gambar gak bakal kepotong di HP sekecil apapun!
-      */}
       <div 
         ref={cardRef} 
         style={{ 
@@ -48,13 +39,13 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          gap: '4px', // Jarak putih tengah
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          justifyContent: 'space-between', // Otomatis ngasih jarak (gap) berdasarkan sisa persentase
+          boxShadow: '0 2px 15px rgba(0,0,0,0.1)',
           overflow: 'hidden'
         }}
       >
-        {/* BARIS ATAS (Tinggi proporsional 320/526) */}
-        <div style={{ display: 'flex', flex: '320', gap: '4px', width: '100%' }}>
+        {/* BARIS ATAS (Tinggi persis 60.5%) */}
+        <div style={{ display: 'flex', height: '60.5%', gap: '4px', width: '100%' }}>
           <div style={{ flex: 1, backgroundColor: '#eee' }}>
             {contentImgs[0] && <img src={contentImgs[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="1" />}
           </div>
@@ -63,8 +54,8 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
           </div>
         </div>
 
-        {/* BARIS BAWAH (Tinggi proporsional 202/526) */}
-        <div style={{ display: 'flex', flex: '202', gap: '4px', width: '100%' }}>
+        {/* BARIS BAWAH (Tinggi persis 38.5%) */}
+        <div style={{ display: 'flex', height: '38.5%', gap: '4px', width: '100%' }}>
           <div style={{ flex: 1, backgroundColor: '#eee' }}>
             {contentImgs[2] && <img src={contentImgs[2]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="3" />}
           </div>
@@ -72,7 +63,7 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
             {contentImgs[3] && <img src={contentImgs[3]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="4" />}
           </div>
           
-          {/* SLOT 5: EFEK BLUR & TEKS +X */}
+          {/* SLOT 5: EFEK BLUR & TEKS */}
           <div style={{ flex: 1, backgroundColor: '#eee', position: 'relative', overflow: 'hidden' }}>
             {contentImgs[4] && (
               <img 
@@ -84,14 +75,12 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
                 alt="5" 
               />
             )}
-            
-            {/* OVERLAY TEKS (Tetap Tajam) */}
             {plusCountText && (
               <div style={{ 
                 position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
                 backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10
               }}>
-                <span style={{ color: '#fff', fontSize: '42px', fontWeight: 'bold', fontFamily: 'sans-serif' }}>
+                <span style={{ color: '#fff', fontSize: '10vw', maxHeight: '42px', fontWeight: 'bold', fontFamily: 'sans-serif' }}>
                   {plusCountText}
                 </span>
               </div>
