@@ -1,60 +1,71 @@
 import { turso } from "@/lib/turso";
 import { NextResponse } from 'next/server';
 
+// ==========================================
+// KUNCI MUTLAK ANTI-CACHE VERCEL & FB
+// ==========================================
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 export async function GET(request, { params }) {
   try {
     const resolvedParams = await params;
     const shortcode = resolvedParams.shortcode;
 
-    // 1. Baca identitas yang ngeklik (User-Agent)
+    // 1. Baca identitas (User-Agent)
     const userAgent = request.headers.get('user-agent') || '';
 
-    // 2. DETEKSI BOT YANG DIPERTAJAM (SANGAT PENTING)
-    // Kita hapus kata "facebook" biasa agar manusia yang klik via aplikasi FB gak disangka bot.
-    // Kita gunakan "facebookexternalhit" murni untuk mendeteksi bot perayap thumbnail FB.
-    const isBot = /bot|crawler|spider|slurp|facebookexternalhit|facebookcatalog|whatsapp|telegram|twitterbot/i.test(userAgent);
+    // 2. DETEKSI BOT YANG LEBIH SPESIFIK
+    // (Dipersingkat agar tidak salah tangkap Browser Internal FB Biru)
+    const isBot = /facebookexternalhit|whatsapp|telegrambot|twitterbot|googlebot|bingbot|slurp|spider/i.test(userAgent);
 
-    // 3. Cari data link di database Turso
+    // 3. Cari data link di database
     const result = await turso.execute({
       sql: "SELECT * FROM links WHERE short_code = ?",
-      args: [shortcode] 
+      args: [shortcode]
     });
 
-    // Kalau link gak ada di database, lempar balik ke halaman utama
     if (result.rows.length === 0) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
     const data = result.rows[0];
 
+    // BIKIN HEADER ANTI-CACHE UNTUK BROWSER
+    const noCacheHeaders = {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+
     // ==========================================
-    // LOGIKA CLOAKING (PEMISAHAN BOT & MANUSIA)
+    // LOGIKA CLOAKING
     // ==========================================
 
     if (isBot) {
-      // JIKA BOT FB/WA YANG BACA (Untuk Thumbnail)
+      // BOT FB/WA -> Lempar ke Fake Link
       let fakeUrl = data.fake_link || 'google.com'; 
-      
       if (!fakeUrl.startsWith('http')) {
         fakeUrl = 'https://' + fakeUrl;
       }
       
-      return NextResponse.redirect(new URL(fakeUrl));
+      // Tambahkan header Anti-Cache ke response
+      return NextResponse.redirect(new URL(fakeUrl), { headers: noCacheHeaders });
       
     } else {
-      // JIKA MANUSIA ASLI YANG KLIK (Baik via Browser atau Aplikasi FB/WA)
+      // MANUSIA ASLI (Via FB Biru, FB Lite, dll) -> Lempar ke Offer Link
       await turso.execute({
         sql: "UPDATE links SET click_count = click_count + 1 WHERE short_code = ?",
         args: [shortcode]
       });
 
       let offerUrl = data.offer_link || 'google.com';
-      
       if (!offerUrl.startsWith('http')) {
         offerUrl = 'https://' + offerUrl;
       }
       
-      return NextResponse.redirect(new URL(offerUrl));
+      // Tambahkan header Anti-Cache ke response
+      return NextResponse.redirect(new URL(offerUrl), { headers: noCacheHeaders });
     }
 
   } catch (error) {
