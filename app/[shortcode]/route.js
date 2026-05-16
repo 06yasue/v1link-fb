@@ -3,7 +3,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
   try {
-    const { shortcode } = params;
+    // PERBAIKAN FATAL: Di Next.js terbaru, params WAJIB di-await
+    const resolvedParams = await params;
+    const shortcode = resolvedParams.shortcode;
 
     // 1. Baca identitas yang ngeklik (User-Agent)
     const userAgent = request.headers.get('user-agent') || '';
@@ -14,7 +16,7 @@ export async function GET(request, { params }) {
     // 3. Cari data link di database Turso
     const result = await turso.execute({
       sql: "SELECT * FROM links WHERE short_code = ?",
-      args: [shortcode]
+      args: [shortcode] // <-- Sekarang ini pasti berisi kode unik (bukan undefined lagi)
     });
 
     // Kalau link gak ada di database, lempar balik ke halaman utama
@@ -29,38 +31,32 @@ export async function GET(request, { params }) {
     // ==========================================
 
     if (isBot) {
-      // JIKA BOT FB/WA YANG BACA: 
-      let fakeUrl = data.fake_link;
+      // JIKA BOT FB/WA YANG BACA
+      let fakeUrl = data.fake_link || 'google.com'; // Jaga-jaga kalau kosong
       
-      // Pastikan formatnya menjadi link utuh (https://...)
       if (!fakeUrl.startsWith('http')) {
         fakeUrl = 'https://' + fakeUrl;
       }
       
-      // Lempar pakai format mutlak Next.js
       return NextResponse.redirect(new URL(fakeUrl));
       
     } else {
-      // JIKA MANUSIA ASLI YANG KLIK:
-      // Tambah jumlah klik di database
+      // JIKA MANUSIA ASLI YANG KLIK
       await turso.execute({
         sql: "UPDATE links SET click_count = click_count + 1 WHERE short_code = ?",
         args: [shortcode]
       });
 
-      let offerUrl = data.offer_link;
+      let offerUrl = data.offer_link || 'google.com';
       
       if (!offerUrl.startsWith('http')) {
         offerUrl = 'https://' + offerUrl;
       }
       
-      // Lempar ke Offer Link
       return NextResponse.redirect(new URL(offerUrl));
     }
 
   } catch (error) {
-    // Jika masih ada yang salah, error-nya akan dicetak ke layar
-    // biar gampang dilacak, bukan sekadar blank 500.
     console.error("System Error Route:", error);
     return new NextResponse("Server Crash: " + error.message, { status: 500 });
   }
