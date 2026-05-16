@@ -12,19 +12,25 @@ export async function POST(request) {
 
     // Proses pencocokan
     if (email === envEmail && password === envPassword) {
-      // Jika benar, berikan "Kunci Masuk" (Cookie) yang tahan 1 hari
-      cookies().set('v1link_auth', 'authenticated', { 
+      
+      // PERBAIKAN FATAL: Wajib pakai await untuk Next.js versi terbaru!
+      const cookieStore = await cookies();
+      cookieStore.set('v1link_auth', 'authenticated', { 
         secure: true, 
-        httpOnly: true, // Super aman, gak bisa dibajak Javascript browser
+        httpOnly: true, // Super aman
         path: '/',
         maxAge: 60 * 60 * 24 
       });
+      
       return NextResponse.json({ success: true }, { status: 200 });
+      
     } else {
       // Jika salah, tolak dengan pesan error
       return NextResponse.json({ message: 'Invalid email or password.' }, { status: 401 });
     }
   } catch (error) {
-    return NextResponse.json({ message: 'Internal server error.' }, { status: 500 });
+    // Biar error aslinya kelihatan di log Vercel kalau masih bermasalah
+    console.error("Login API Error:", error);
+    return NextResponse.json({ message: 'Server crash: ' + error.message }, { status: 500 });
   }
 }
