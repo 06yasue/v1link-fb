@@ -36,7 +36,7 @@ export default function Navbar() {
           <ul className="nav navbar-nav navbar-right">
             <li><a href="/link" onClick={() => setIsOpen(false)}><i className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '5px' }}>add_link</i> Buat Link</a></li>
             <li><a href="/list" onClick={() => setIsOpen(false)}><i className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '5px' }}>analytics</i> Statistik</a></li>
-            <li><a href="/generator" onClick={() => setIsOpen(false)}><i className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '5px' }}>images</i> Buat Images</a></li>
+            <li><a href="/generator" onClick={() => setIsOpen(false)}><i className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '5px' }}>image</i> Buat Images</a></li>
           </ul>
         </div>
       </div>
