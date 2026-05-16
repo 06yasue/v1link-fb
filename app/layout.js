@@ -19,7 +19,7 @@ export const metadata = {
     images: [
       {
         // Gambar Thumbnail yang muncul saat link V1LINK dibagikan di Sosmed/WhatsApp
-        url: 'https://images.unsplash.com/photo-1614064641913-6b67b9bac9a1?auto=format&fit=crop&w=1200&q=80', 
+        url: 'https://i.ibb.co.com/zTpXJ2Mp/1773595455531.jpg', 
         width: 1200,
         height: 630,
         alt: 'V1LINK System Thumbnail',
