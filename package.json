@@ -12,6 +12,7 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "@libsql/client": "latest"
+    "@libsql/client": "latest",
+    "html-to-image": "latest"
   }
 }
