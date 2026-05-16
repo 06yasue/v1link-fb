@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { toBlob } from 'html-to-image';
 
 export default function VideoImage({ contentImg }) {
-  const cardRef = useRef(null); // The dedicated capture canvas (hidden)
+  const cardRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const _downloadImage = async () => {
@@ -11,10 +11,15 @@ export default function VideoImage({ contentImg }) {
     try {
       const blob = await toBlob(cardRef.current, {
         pixelRatio: 1, // Kunci resolusi agar mutlak 526x526
-        // Direct capture from the dedicated, fixed-size element
         canvasWidth: 526,
         canvasHeight: 526,
-        // The style for the captureDiv already enforces 526x526
+        style: { 
+          width: '526px', 
+          height: '526px', 
+          maxWidth: 'none', 
+          margin: '0', 
+          transform: 'none' 
+        }
       });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -41,7 +46,6 @@ export default function VideoImage({ contentImg }) {
           style={{ 
             width: '526px', 
             height: '526px', 
-            // In case html-to-image EAST US EAST US East US East US tries East US to East US shrink East US it East US, East USEast US East US we East US East USEast US force East USEast US East US US it East US to East US stay East USEast US East US at East US East USEast US East US 526px East US
             maxWidth: '526px',
             maxHeight: '526px',
             minWidth: '526px',
@@ -61,23 +65,25 @@ export default function VideoImage({ contentImg }) {
             </div>
           )}
           
-          {/* Tombol Play Klasik (Paku Mutlak di Tengah - 526x526 px) */}
+          {/* TOMBOL PLAY PREMIUM (KOTAK HITAM SOLID, KUNCI MATI DI TENGAH) */}
           <div style={{ 
             position: 'absolute', 
-            width: '90px', 
-            height: '90px', 
-            backgroundColor: 'rgba(255, 255, 255, 0.85)', 
+            width: '100px', 
+            height: '100px', 
+            // BARU: Solid Hitam Pekat, Gak Pake Transparan
+            backgroundColor: '#000000', 
             borderRadius: '50%', 
-            // Gunakan rumus kordinat absolut mutlak bukan flexbox
-            top: '218px', // (526/2) - (90/2) = 263 - 45
-            left: '218px', // (526/2) - (90/2)
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center', 
-            boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-            zIndex: 10
+            boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+            // KUNCI MATI DI TENGAH SEMPURNA
+            top: '213px', // (526/2) - (100/2) = 263 - 50
+            left: '213px', // (526/2) - (100/2)
+            zIndex: 10,
           }}>
-            <i className="material-icons" style={{ fontSize: '60px', color: '#333', marginLeft: '6px' }}>play_arrow</i>
+            {/* Panah Play Icon (Putih Bersih biar kontras) */}
+            <i className="material-icons" style={{ fontSize: '70px', color: '#ffffff', marginLeft: '8px' }}>play_arrow</i>
           </div>
         </div>
       </div>
@@ -107,16 +113,22 @@ export default function VideoImage({ contentImg }) {
           <i className="material-icons" style={{ fontSize: '80px', color: '#444' }}>image</i>
         )}
         
-        {/* TOMBOL PLAY (Pake persentase vw biar ngecil/membesar ngikutin layar) */}
+        {/* TOMBOL PLAY (PREVIEW RESPONSIVE) */}
+        {/* BARU: Tampilan Solid Hitam Pekat di Preview juga */}
         <div style={{ 
           position: 'absolute', 
           width: '20%', height: '20%', 
           minWidth: '60px', minHeight: '60px', 
-          maxWidth: '90px', maxHeight: '90px',
-          backgroundColor: 'rgba(255, 255, 255, 0.85)', 
-          borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-        }}>
-          <i className="material-icons" style={{ fontSize: '10vw', maxHeight: '60px', color: '#333', marginLeft: '5%' }}>play_arrow</i>
+          maxWidth: '100px', maxHeight: '100px',
+          backgroundColor: '#000000', // Solid Hitam Pekat
+          borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          transition: 'transform 0.2s', // Animasi hover
+        }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <i className="material-icons" style={{ fontSize: '10vw', maxHeight: '70px', color: '#ffffff', marginLeft: '5%' }}>play_arrow</i>
         </div>
       </div>
 
