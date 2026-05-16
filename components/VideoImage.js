@@ -8,18 +8,12 @@ export default function VideoImage({ contentImg }) {
     if (cardRef.current === null) return;
     try {
       const blob = await toBlob(cardRef.current, {
-        pixelRatio: 1,
-        width: 526, // Paksa hasil render persis 526px
+        pixelRatio: 1, // Kunci mutlak
+        width: 526, 
         height: 526,
         canvasWidth: 526,
         canvasHeight: 526,
-        style: { 
-          width: '526px', // Paksa ukuran asli saat didownload
-          height: '526px', 
-          maxWidth: '526px',
-          margin: '0',
-          transform: 'none'
-        }
+        style: { width: '526px', height: '526px', maxWidth: '526px', margin: '0', transform: 'none' }
       });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -34,19 +28,20 @@ export default function VideoImage({ contentImg }) {
 
   return (
     <>
+      {/* ASPECT RATIO 1/1 BIKIN GAMBAR KOTAK SEMPURNA DI HP APAPUN */}
       <div 
         ref={cardRef} 
         style={{ 
           width: '100%', 
           maxWidth: '526px',
-          aspectRatio: '1 / 1', // Menjaga gambar tetap proporsional bujur sangkar di layar HP
+          aspectRatio: '1 / 1', 
           background: '#000', 
           margin: '0 auto', 
           position: 'relative',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          boxShadow: '0 2px 15px rgba(0,0,0,0.1)',
           overflow: 'hidden'
         }}
       >
@@ -56,11 +51,16 @@ export default function VideoImage({ contentImg }) {
           <i className="material-icons" style={{ fontSize: '80px', color: '#444' }}>image</i>
         )}
         
+        {/* TOMBOL PLAY (Pake persentase vw biar ngecil/membesar ngikutin layar) */}
         <div style={{ 
-          position: 'absolute', width: '90px', height: '90px', backgroundColor: 'rgba(255, 255, 255, 0.85)', 
+          position: 'absolute', 
+          width: '20%', height: '20%', 
+          minWidth: '60px', minHeight: '60px', 
+          maxWidth: '90px', maxHeight: '90px',
+          backgroundColor: 'rgba(255, 255, 255, 0.85)', 
           borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
         }}>
-          <i className="material-icons" style={{ fontSize: '60px', color: '#333', marginLeft: '5px' }}>play_arrow</i>
+          <i className="material-icons" style={{ fontSize: '10vw', maxHeight: '60px', color: '#333', marginLeft: '5%' }}>play_arrow</i>
         </div>
       </div>
 
