@@ -8,10 +8,18 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
     if (cardRef.current === null) return;
     try {
       const blob = await toBlob(cardRef.current, {
-        pixelRatio: 1, // Kunci mutlak resolusi 526x526
-        width: 526,
+        pixelRatio: 1, 
+        width: 526, // Paksa hasil render persis 526px
         height: 526,
-        style: { transform: 'none', margin: '0' }
+        canvasWidth: 526,
+        canvasHeight: 526,
+        style: { 
+          width: '526px', // Paksa ukuran asli saat didownload
+          height: '526px', 
+          maxWidth: '526px',
+          margin: '0',
+          transform: 'none'
+        }
       });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -26,55 +34,58 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
 
   return (
     <>
-      {/* EFEK IFRAME/SCROLL DIBUANG TOTAL */}
+      {/* KUNCI RESPONSIVE: width 100%, maxWidth 526px, dan aspectRatio 1/1 
+        Ini bikin gambar gak bakal kepotong di HP sekecil apapun!
+      */}
       <div 
         ref={cardRef} 
         style={{ 
-          width: '526px', 
-          height: '526px', 
-          minWidth: '526px', 
+          width: '100%', 
+          maxWidth: '526px',
+          aspectRatio: '1 / 1', 
           background: '#fff', 
           margin: '0 auto', 
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)' 
+          gap: '4px', // Jarak putih tengah
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
         }}
       >
-        {/* BARIS ATAS (Lebih Besar - Tinggi 320px) */}
-        <div style={{ display: 'flex', width: '100%', height: '320px', justifyContent: 'space-between' }}>
-          <div style={{ width: '261px', height: '100%', backgroundColor: '#eee' }}>
+        {/* BARIS ATAS (Tinggi proporsional 320/526) */}
+        <div style={{ display: 'flex', flex: '320', gap: '4px', width: '100%' }}>
+          <div style={{ flex: 1, backgroundColor: '#eee' }}>
             {contentImgs[0] && <img src={contentImgs[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="1" />}
           </div>
-          <div style={{ width: '261px', height: '100%', backgroundColor: '#eee' }}>
+          <div style={{ flex: 1, backgroundColor: '#eee' }}>
             {contentImgs[1] && <img src={contentImgs[1]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="2" />}
           </div>
         </div>
 
-        {/* BARIS BAWAH (Lebih Kecil - Tinggi 202px) */}
-        <div style={{ display: 'flex', width: '100%', height: '202px', justifyContent: 'space-between' }}>
-          <div style={{ width: '172px', height: '100%', backgroundColor: '#eee' }}>
+        {/* BARIS BAWAH (Tinggi proporsional 202/526) */}
+        <div style={{ display: 'flex', flex: '202', gap: '4px', width: '100%' }}>
+          <div style={{ flex: 1, backgroundColor: '#eee' }}>
             {contentImgs[2] && <img src={contentImgs[2]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="3" />}
           </div>
-          <div style={{ width: '174px', height: '100%', backgroundColor: '#eee' }}>
+          <div style={{ flex: 1, backgroundColor: '#eee' }}>
             {contentImgs[3] && <img src={contentImgs[3]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="4" />}
           </div>
           
-          {/* SLOT 5: EFEK BLUR KHUSUS GAMBAR */}
-          <div style={{ width: '172px', height: '100%', backgroundColor: '#eee', position: 'relative', overflow: 'hidden' }}>
+          {/* SLOT 5: EFEK BLUR & TEKS +X */}
+          <div style={{ flex: 1, backgroundColor: '#eee', position: 'relative', overflow: 'hidden' }}>
             {contentImgs[4] && (
               <img 
                 src={contentImgs[4]} 
                 style={{ 
                   width: '100%', height: '100%', objectFit: 'cover',
-                  filter: plusCountText ? 'blur(3px)' : 'none' // Efek blur cuma kena ke gambarnya aja
+                  filter: plusCountText ? 'blur(3px)' : 'none' 
                 }} 
                 alt="5" 
               />
             )}
             
-            {/* OVERLAY TEKS (Gak kena efek blur) */}
+            {/* OVERLAY TEKS (Tetap Tajam) */}
             {plusCountText && (
               <div style={{ 
                 position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, 
