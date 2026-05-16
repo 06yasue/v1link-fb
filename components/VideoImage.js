@@ -8,12 +8,18 @@ export default function VideoImage({ contentImg }) {
     if (cardRef.current === null) return;
     try {
       const blob = await toBlob(cardRef.current, {
-        pixelRatio: 1, // Kunci mutlak
+        pixelRatio: 1, // Kunci resolusi agar mutlak 526x526
         width: 526, 
         height: 526,
         canvasWidth: 526,
         canvasHeight: 526,
-        style: { width: '526px', height: '526px', maxWidth: '526px', margin: '0', transform: 'none' }
+        style: { 
+          width: '526px', 
+          height: '526px', 
+          maxWidth: 'none', 
+          margin: '0', 
+          transform: 'none' 
+        }
       });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -28,7 +34,7 @@ export default function VideoImage({ contentImg }) {
 
   return (
     <>
-      {/* ASPECT RATIO 1/1 BIKIN GAMBAR KOTAK SEMPURNA DI HP APAPUN */}
+      {/* KANVAS MURNI 526x526 (ABSOLUTE POSITIONING) */}
       <div 
         ref={cardRef} 
         style={{ 
@@ -37,30 +43,38 @@ export default function VideoImage({ contentImg }) {
           aspectRatio: '1 / 1', 
           background: '#000', 
           margin: '0 auto', 
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          position: 'relative', // Kunci kordinat anak di dalamnya
           boxShadow: '0 2px 15px rgba(0,0,0,0.1)',
           overflow: 'hidden'
         }}
       >
+        {/* Gambar Utama (Full 100% menempati area) */}
         {contentImg ? (
           <img src={contentImg} alt="Video Thumbnail" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <i className="material-icons" style={{ fontSize: '80px', color: '#444' }}>image</i>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+            <i className="material-icons" style={{ fontSize: '80px', color: '#444' }}>image</i>
+          </div>
         )}
         
-        {/* TOMBOL PLAY (Pake persentase vw biar ngecil/membesar ngikutin layar) */}
+        {/* TOMBOL PLAY KLASIK (Ngunci Mati di Tengah pakai rumus top/left 50%) */}
         <div style={{ 
           position: 'absolute', 
-          width: '20%', height: '20%', 
-          minWidth: '60px', minHeight: '60px', 
-          maxWidth: '90px', maxHeight: '90px',
+          top: '50%', 
+          left: '50%', 
+          transform: 'translate(-50%, -50%)', // Rumus mutlak center di koordinat absolute
+          width: '90px', 
+          height: '90px', 
           backgroundColor: 'rgba(255, 255, 255, 0.85)', 
-          borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+          borderRadius: '50%', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
+          zIndex: 10
         }}>
-          <i className="material-icons" style={{ fontSize: '10vw', maxHeight: '60px', color: '#333', marginLeft: '5%' }}>play_arrow</i>
+          {/* Panah Play Icon */}
+          <i className="material-icons" style={{ fontSize: '60px', color: '#333', marginLeft: '6px' }}>play_arrow</i>
         </div>
       </div>
 
