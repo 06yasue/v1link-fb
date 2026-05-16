@@ -9,9 +9,17 @@ export default function VideoImage({ contentImg }) {
     try {
       const blob = await toBlob(cardRef.current, {
         pixelRatio: 1,
-        width: 526,
+        width: 526, // Paksa hasil render persis 526px
         height: 526,
-        style: { transform: 'none', margin: '0' }
+        canvasWidth: 526,
+        canvasHeight: 526,
+        style: { 
+          width: '526px', // Paksa ukuran asli saat didownload
+          height: '526px', 
+          maxWidth: '526px',
+          margin: '0',
+          transform: 'none'
+        }
       });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -26,20 +34,20 @@ export default function VideoImage({ contentImg }) {
 
   return (
     <>
-      {/* EFEK IFRAME/SCROLL DIBUANG TOTAL */}
       <div 
         ref={cardRef} 
         style={{ 
-          width: '526px', 
-          height: '526px', 
-          minWidth: '526px', 
+          width: '100%', 
+          maxWidth: '526px',
+          aspectRatio: '1 / 1', // Menjaga gambar tetap proporsional bujur sangkar di layar HP
           background: '#000', 
           margin: '0 auto', 
           position: 'relative',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
         }}
       >
         {contentImg ? (
