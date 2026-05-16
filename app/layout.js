@@ -8,8 +8,8 @@ export const metadata = {
   description: 'Secure, fast, and reliable URL management and traffic routing system. Optimize your links with real-time analytics.',
   icons: {
     // Icon (Favicon) yang muncul di tab browser
-    icon: 'https://cdn-icons-png.flaticon.com/512/2874/2874808.png', 
-    apple: 'https://cdn-icons-png.flaticon.com/512/2874/2874808.png',
+    icon: 'https://i.ibb.co.com/Wv8PkgMS/noun-link-4166490-064771.png', 
+    apple: 'https://i.ibb.co.com/Wv8PkgMS/noun-link-4166490-064771.png',
   },
   openGraph: {
     title: 'V1LINK - Advanced Link Management',
