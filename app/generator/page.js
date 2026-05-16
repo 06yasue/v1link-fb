@@ -2,25 +2,18 @@
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import VideoCard from '@/components/VideoCard';
-import ViralCard from '@/components/ViralCard';
+import VideoImage from '@/components/VideoImage';
+import ViralPostCollage from '@/components/ViralPostCollage';
 
 export default function GeneratorPage() {
-  // State untuk melacak template mana yang dipilih ('video' atau 'viral')
   const [activeTemplate, setActiveTemplate] = useState('');
   
-  // State untuk menyimpan data input form
   const [formData, setFormData] = useState({
-    profileName: 'Account Name',
-    caption: 'Your viral post caption or video title goes here...',
-    viewsCount: '1.2M Views',
     timeStamp: '12 hours ago',
-    likeCount: '89K Likes',
-    profileImg: '',
-    mainImg: ''
+    plusCountText: '+9', // Default untuk kolase
+    contentImgs: [] // Array untuk menyimpan hingga 5 gambar
   });
 
-  // Fungsi untuk menangani perubahan input form
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -28,11 +21,20 @@ export default function GeneratorPage() {
   // Fungsi untuk menangani upload gambar (Profile & Main)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    const targetId = e.target.id;
+    const targetId = e.target.id; // profileImg, contentImg1, contentImg2, dst.
+    
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, [targetId]: reader.result });
+        if (targetId === 'profileImg') {
+          setFormData(prev => ({ ...prev, profileImg: reader.result }));
+        } else {
+          // Menangani upload 5 gambar kolase ke dalam array
+          const slotIndex = parseInt(targetId.replace('contentImg', '')) - 1;
+          const newContentImgs = [...formData.contentImgs];
+          newContentImgs[slotIndex] = reader.result;
+          setFormData(prev => ({ ...prev, contentImgs: newContentImgs }));
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -44,97 +46,64 @@ export default function GeneratorPage() {
       
       <div className="container" style={{ marginTop: '90px', minHeight: '75vh' }}>
         
-        {/* STEP 1: PEMILIHAN TEMPLATE (Wajib Dipilih Dulu) */}
+        {/* STEP 1: PEMILIHAN TEMPLATE */}
         <div className="row text-center" style={{ marginBottom: '40px' }}>
           <div className="col-xs-12">
-            <h3><i className="material-icons" style={{ verticalAlign: 'text-bottom', marginRight: '5px' }}>layers</i> Choose Your Template</h3>
-            <p className="text-muted">Select a layout before configuring your image.</p>
+            <h3><i className="material-icons" style={{ verticalAlign: 'text-bottom', marginRight: '5px', color: '#337ab7' }}>burst_mode</i> Choose Image Style</h3>
+            <p className="text-muted">Select a template to generate your 526x526 pixel image.</p>
             <div className="btn-group btn-group-lg" style={{ marginTop: '15px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' }}>
-              <button 
-                className={`btn ${activeTemplate === 'video' ? 'btn-danger' : 'btn-default'}`}
-                onClick={() => setActiveTemplate('video')}
-              >
-                <i className="material-icons" style={{ verticalAlign: 'middle', marginRight: '5px' }}>play_circle</i>
-                FAKE VIDEO
+              <button className={`btn ${activeTemplate === 'video' ? 'btn-danger' : 'btn-default'}`} onClick={() => setActiveTemplate('video')}>
+                <i className="material-icons" style={{ verticalAlign: 'middle', marginRight: '5px' }}>play_circle</i> FAKE VIDEO
               </button>
-              <button 
-                className={`btn ${activeTemplate === 'viral' ? 'btn-success' : 'btn-default'}`}
-                onClick={() => setActiveTemplate('viral')}
-              >
-                <i className="material-icons" style={{ verticalAlign: 'middle', marginRight: '5px' }}>camera</i>
-                VIRAL POST
+              <button className={`btn ${activeTemplate === 'viral' ? 'btn-success' : 'btn-default'}`} onClick={() => setActiveTemplate('viral')}>
+                <i className="material-icons" style={{ verticalAlign: 'middle', marginRight: '5px' }}>grid_on</i> VIRAL COLLAGE
               </button>
             </div>
           </div>
         </div>
 
-        {/* STEP 2: CONFIGURATION & PREVIEW (Hanya muncul jika template sudah dipilih) */}
+        {/* STEP 2: CONFIGURATION & PREVIEW */}
         {activeTemplate && (
           <div className="row">
             
-            {/* AREA FORM INPUT (Kiri) */}
+            {/* AREA FORM INPUT (Dinamis Berdasarkan Template) */}
             <div className="col-xs-12 col-md-6" style={{ marginBottom: '30px' }}>
               <div className="panel panel-default" style={{ borderRadius: '6px' }}>
                 <div className="panel-heading" style={{ backgroundColor: '#fdfdfd' }}>
                   <h3 className="panel-title" style={{ fontWeight: 'bold' }}>
-                    <i className="material-icons" style={{ verticalAlign: 'text-bottom', fontSize: '18px' }}>build</i> Configure Details
+                    <i className="material-icons" style={{ verticalAlign: 'text-bottom', fontSize: '18px' }}>build</i> Image Details
                   </h3>
                 </div>
                 <div className="panel-body" style={{ padding: '20px' }}>
                   <form onSubmit={(e) => e.preventDefault()}>
-                    
-                    <div className="form-group">
-                      <label style={{ fontWeight: 'bold' }}><i className="material-icons" style={{ fontSize: '14px', verticalAlign: 'middle' }}>account_circle</i> Profile Image</label>
-                      <input type="file" id="profileImg" className="form-control" accept="image/*" onChange={handleImageUpload} />
+
+                    {/* DYNAMIC CONTENT IMAGE UPLOAD */}
+                    <div className="form-group" style={{ marginBottom: '20px' }}>
+                      <label style={{ fontWeight: 'bold' }}><i className="material-icons" style={{ fontSize: '14px', verticalAlign: 'middle' }}>image</i> Content Image Upload</label>
+                      
+                      {activeTemplate === 'video' ? (
+                        // 1 SLOT UNTUK FAKE VIDEO
+                        <input type="file" id="contentImg1" className="form-control" accept="image/*" onChange={handleImageUpload} />
+                      ) : (
+                        // 5 SLOTS UNTUK VIRAL COLLAGE
+                        <div className="row" style={{ marginTop: '10px' }}>
+                          {[...Array(5)].map((_, i) => (
+                            <div key={i} className="col-xs-6 col-sm-4" style={{ marginBottom: '15px' }}>
+                              <label style={{ fontSize: '11px', color: '#777', display: 'block' }}>Slot {i+1} {i===0 && '(Large)'}</label>
+                              <input type="file" id={`contentImg${i+1}`} className="form-control" accept="image/*" style={{ fontSize: '11px', padding: '6px' }} onChange={handleImageUpload} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="form-group">
-                      <label style={{ fontWeight: 'bold' }}><i className="material-icons" style={{ fontSize: '14px', verticalAlign: 'middle' }}>image</i> Main Content Image</label>
-                      <input type="file" id="mainImg" className="form-control" accept="image/*" onChange={handleImageUpload} />
-                    </div>
+                    <hr />
 
-                    <div className="form-group">
-                      <label style={{ fontWeight: 'bold' }}>Account Name</label>
-                      <input type="text" id="profileName" className="form-control input-lg" value={formData.profileName} onChange={handleInputChange} />
-                    </div>
-
-                    <div className="form-group">
-                      <label style={{ fontWeight: 'bold' }}>
-                        {activeTemplate === 'video' ? 'Video Title' : 'Post Caption'}
-                      </label>
-                      <textarea id="caption" className="form-control" rows="3" value={formData.caption} onChange={handleInputChange} style={{ resize: 'none' }}></textarea>
-                    </div>
-
-                    {/* Input dinamis berdasarkan template */}
-                    {activeTemplate === 'video' ? (
-                      <div className="row">
-                        <div className="col-xs-6">
-                          <div className="form-group">
-                            <label>Views Count</label>
-                            <input type="text" id="viewsCount" className="form-control" value={formData.viewsCount} onChange={handleInputChange} />
-                          </div>
-                        </div>
-                        <div className="col-xs-6">
-                          <div className="form-group">
-                            <label>Timestamp</label>
-                            <input type="text" id="timeStamp" className="form-control" value={formData.timeStamp} onChange={handleInputChange} />
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="row">
-                        <div className="col-xs-6">
-                          <div className="form-group">
-                            <label>Like Count</label>
-                            <input type="text" id="likeCount" className="form-control" value={formData.likeCount} onChange={handleInputChange} />
-                          </div>
-                        </div>
-                        <div className="col-xs-6">
-                          <div className="form-group">
-                            <label>Timestamp</label>
-                            <input type="text" id="timeStamp" className="form-control" value={formData.timeStamp} onChange={handleInputChange} />
-                          </div>
-                        </div>
+                    {/* DYNAMIC FIELDS */}
+                    {activeTemplate === 'viral' && (
+                      <div className="form-group">
+                        <label style={{ fontWeight: 'bold' }}>Plus Count Text</label>
+                        <input type="text" id="plusCountText" className="form-control input-lg" value={formData.plusCountText} onChange={handleInputChange} placeholder="Contoh: +9 or +2" />
                       </div>
                     )}
 
@@ -143,7 +112,7 @@ export default function GeneratorPage() {
               </div>
             </div>
 
-            {/* AREA LIVE PREVIEW & DOWNLOAD (Kanan) */}
+            {/* AREA LIVE PREVIEW & DOWNLOAD */}
             <div className="col-xs-12 col-md-6">
               <div className="panel panel-default" style={{ borderRadius: '6px' }}>
                 <div className="panel-heading" style={{ backgroundColor: '#fdfdfd' }}>
@@ -154,8 +123,12 @@ export default function GeneratorPage() {
                 <div className="panel-body text-center" style={{ padding: '25px', backgroundColor: '#fcfcfc' }}>
                   
                   {/* Komponen Preview Berdasarkan Template yang Dipilih */}
-                  {activeTemplate === 'video' && <VideoCard formData={formData} />}
-                  {activeTemplate === 'viral' && <ViralCard formData={formData} />}
+                  {activeTemplate === 'video' && (
+                    <VideoImage contentImg={formData.contentImgs[0]} />
+                  )}
+                  {activeTemplate === 'viral' && (
+                    <ViralPostCollage contentImgs={formData.contentImgs} plusCountText={formData.plusCountText} />
+                  )}
 
                 </div>
               </div>
@@ -170,4 +143,3 @@ export default function GeneratorPage() {
     </>
   );
 }
-
