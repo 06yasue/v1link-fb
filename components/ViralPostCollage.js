@@ -8,7 +8,7 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
     if (cardRef.current === null) return;
     try {
       const blob = await toBlob(cardRef.current, {
-        pixelRatio: 1, // KUNCI MUTLAK MENCEGAH RESOLUSI NAIK JADI 800+
+        pixelRatio: 1, // Kunci mutlak agar resolusi tetap 526x526
         width: 526,
         height: 526,
         style: { transform: 'none', margin: '0' }
@@ -27,61 +27,64 @@ export default function ViralPostCollage({ contentImgs, plusCountText }) {
   return (
     <>
       <div className="table-responsive" style={{ border: 'none', overflowX: 'auto', marginBottom: '15px' }}>
-        {/* AREA CAPTURE KOLASE PERSEGI 526x526 */}
+        {/* KANVAS MURNI 526x526 */}
         <div 
           ref={cardRef} 
           style={{ 
             width: '526px', 
             height: '526px', 
-            minWidth: '526px', // Paksa ukuran agar tidak hancur di HP
-            background: '#fff', 
+            minWidth: '526px', 
+            background: '#fff', // Warna background menjadi warna garis celah (gap)
             margin: '0 auto', 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)', // Dibagi 6 agar bisa memuat format 2 dan 3 gambar
-            gridTemplateRows: 'repeat(2, 1fr)',    // 2 Baris (Atas dan Bawah)
-            gap: '4px', // Jarak putih khas kolase FB
-            overflow: 'hidden'
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between' // Memisahkan baris atas dan bawah
           }}
         >
-          {/* Gambar 1 (Atas Kiri - Memakan 3 dari 6 kolom) */}
-          <div style={{ gridColumn: '1 / span 3', gridRow: '1', background: '#eee', position: 'relative' }}>
-            {contentImgs[0] && <img src={contentImgs[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="1" />}
-          </div>
-          
-          {/* Gambar 2 (Atas Kanan - Memakan 3 dari 6 kolom) */}
-          <div style={{ gridColumn: '4 / span 3', gridRow: '1', background: '#eee', position: 'relative' }}>
-            {contentImgs[1] && <img src={contentImgs[1]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="2" />}
-          </div>
-
-          {/* Gambar 3 (Bawah Kiri - Memakan 2 dari 6 kolom) */}
-          <div style={{ gridColumn: '1 / span 2', gridRow: '2', background: '#eee', position: 'relative' }}>
-            {contentImgs[2] && <img src={contentImgs[2]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="3" />}
+          {/* BARIS ATAS (2 Gambar - 50% 50%) */}
+          <div style={{ display: 'flex', width: '100%', height: '261px', justifyContent: 'space-between' }}>
+            {/* Slot 1 */}
+            <div style={{ width: '261px', height: '100%', backgroundColor: '#eee' }}>
+              {contentImgs[0] && <img src={contentImgs[0]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="1" />}
+            </div>
+            {/* Slot 2 */}
+            <div style={{ width: '261px', height: '100%', backgroundColor: '#eee' }}>
+              {contentImgs[1] && <img src={contentImgs[1]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="2" />}
+            </div>
           </div>
 
-          {/* Gambar 4 (Bawah Tengah - Memakan 2 dari 6 kolom) */}
-          <div style={{ gridColumn: '3 / span 2', gridRow: '2', background: '#eee', position: 'relative' }}>
-            {contentImgs[3] && <img src={contentImgs[3]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="4" />}
-          </div>
-
-          {/* Gambar 5 (Bawah Kanan - Memakan 2 dari 6 kolom) + OVERLAY */}
-          <div style={{ gridColumn: '5 / span 2', gridRow: '2', background: '#eee', position: 'relative' }}>
-            {contentImgs[4] && <img src={contentImgs[4]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="5" />}
-            
-            {/* Overlay Hitam Transparan & Teks Angka */}
-            {plusCountText && (
-              <div style={{ 
-                position: 'absolute', 
-                top: 0, left: 0, right: 0, bottom: 0, 
-                backgroundColor: 'rgba(0,0,0,0.5)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center' 
-              }}>
-                <span style={{ color: '#fff', fontSize: '38px', fontWeight: 'bold' }}>
-                  {plusCountText}
-                </span>
-              </div>
-            )}
+          {/* BARIS BAWAH (3 Gambar - 33.3% 33.3% 33.3%) */}
+          <div style={{ display: 'flex', width: '100%', height: '261px', justifyContent: 'space-between' }}>
+            {/* Slot 3 */}
+            <div style={{ width: '172px', height: '100%', backgroundColor: '#eee' }}>
+              {contentImgs[2] && <img src={contentImgs[2]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="3" />}
+            </div>
+            {/* Slot 4 */}
+            <div style={{ width: '174px', height: '100%', backgroundColor: '#eee' }}>
+              {contentImgs[3] && <img src={contentImgs[3]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="4" />}
+            </div>
+            {/* Slot 5 + OVERLAY TEXT */}
+            <div style={{ width: '172px', height: '100%', backgroundColor: '#eee', position: 'relative' }}>
+              {contentImgs[4] && <img src={contentImgs[4]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="5" />}
+              
+              {/* Overlay Hitam 50% & Angka di Tengah (Persis FB) */}
+              {plusCountText && (
+                <div style={{ 
+                  position: 'absolute', 
+                  top: 0, left: 0, right: 0, bottom: 0, 
+                  backgroundColor: 'rgba(0,0,0,0.5)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  zIndex: 10
+                }}>
+                  <span style={{ color: '#fff', fontSize: '42px', fontWeight: 'bold', fontFamily: 'sans-serif' }}>
+                    {plusCountText}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
