@@ -54,7 +54,7 @@ export default function GeneratorPage() {
         {activeTemplate && (
           <div className="row">
             
-            {/* AREA FORM */}
+            {/* AREA FORM (Tetap pakai Box biar rapi) */}
             <div className="col-xs-12 col-md-5" style={{ marginBottom: '30px' }}>
               <div className="panel panel-default">
                 <div className="panel-heading"><h3 className="panel-title" style={{ fontWeight: 'bold' }}>Image Details</h3></div>
@@ -84,14 +84,15 @@ export default function GeneratorPage() {
               </div>
             </div>
 
-            {/* AREA PREVIEW (Gak ada efek iframe, bakal nampil langsung secara utuh) */}
+            {/* AREA PREVIEW (BOX PANEL DIHAPUS TOTAL) */}
             <div className="col-xs-12 col-md-7">
-              <div className="panel panel-default">
-                <div className="panel-heading"><h3 className="panel-title" style={{ fontWeight: 'bold' }}>Live Preview</h3></div>
-                <div className="panel-body text-center" style={{ backgroundColor: '#fcfcfc', overflowX: 'hidden' }}>
-                  {activeTemplate === 'video' && <VideoImage contentImg={formData.contentImgs[0]} />}
-                  {activeTemplate === 'viral' && <ViralPostCollage contentImgs={formData.contentImgs} plusCountText={formData.plusCountText} />}
-                </div>
+              <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontWeight: 'bold', marginTop: '0', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>Live Preview</h3>
+              </div>
+              
+              <div style={{ paddingBottom: '30px' }}>
+                {activeTemplate === 'video' && <VideoImage contentImg={formData.contentImgs[0]} />}
+                {activeTemplate === 'viral' && <ViralPostCollage contentImgs={formData.contentImgs} plusCountText={formData.plusCountText} />}
               </div>
             </div>
 
